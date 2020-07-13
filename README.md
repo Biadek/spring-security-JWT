@@ -1,4 +1,4 @@
-# jwt-security-example
+# spring-security-JWT
 
 <b>Technology stack:</b>
 - Java 11
