@@ -72,4 +72,16 @@ public class UserService {
         User user = getCurrentUser();
         return user.getRole();
     }
+
+    public void setReaderRoleAdmin(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found with username: " + email));
+        user.setRole(Role.ROLE_ADMIN);
+        userRepository.save(user);
+    }
+
+    public void setReaderRoleUser(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found with username: " + email));
+        user.setRole(Role.ROLE_USER);
+        userRepository.save(user);
+    }
 }

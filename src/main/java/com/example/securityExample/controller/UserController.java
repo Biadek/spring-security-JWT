@@ -5,10 +5,8 @@ import com.example.securityExample.dto.LoginResponseDto;
 import com.example.securityExample.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
@@ -31,5 +29,18 @@ public class UserController {
         return ResponseEntity.ok(userService.loginUser(loginDto));
     }
 
+    @PutMapping("/asAdmin/{email}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Void> setReaderRoleAdmin(@PathVariable("email") String email) {
+        userService.setReaderRoleAdmin(email);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping("/asUser/{email}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Void> setReaderRoleUser(@PathVariable("email") String email) {
+        userService.setReaderRoleUser(email);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
 
 }
