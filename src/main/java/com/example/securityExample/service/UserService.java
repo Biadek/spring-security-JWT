@@ -3,7 +3,7 @@ package com.example.securityExample.service;
 import com.example.securityExample.dto.LoginDto;
 import com.example.securityExample.dto.LoginResponseDto;
 import com.example.securityExample.exception.ConflictException;
-import com.example.securityExample.exception.NotFoundException;
+import com.example.securityExample.exception.UserNotFoundException;
 import com.example.securityExample.model.Reader;
 import com.example.securityExample.model.Role;
 import com.example.securityExample.model.User;
@@ -60,7 +60,7 @@ public class UserService {
         SecurityContext contextHolder = SecurityContextHolder.getContext();
         UserDetails principal = (UserDetails) contextHolder.getAuthentication().getPrincipal();
         return userRepository.findByEmail(principal.getUsername())
-                .orElseThrow(() -> new NotFoundException("User not found with username: " + principal.getUsername()));
+                .orElseThrow(() -> new UserNotFoundException(principal.getUsername()));
     }
 
     public Reader getCurrentReader() {
@@ -74,13 +74,13 @@ public class UserService {
     }
 
     public void setReaderRoleAdmin(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found with username: " + email));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
         user.setRole(Role.ROLE_ADMIN);
         userRepository.save(user);
     }
 
     public void setReaderRoleUser(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found with username: " + email));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
         user.setRole(Role.ROLE_USER);
         userRepository.save(user);
     }

@@ -1,8 +1,9 @@
 package com.example.securityExample.service;
 
 import com.example.securityExample.dto.ReaderDto;
-import com.example.securityExample.exception.NotFoundException;
+import com.example.securityExample.exception.BookNotFoundException;
 import com.example.securityExample.exception.NotAcceptableException;
+import com.example.securityExample.exception.ReaderNotFoundException;
 import com.example.securityExample.model.Book;
 import com.example.securityExample.model.Reader;
 import com.example.securityExample.model.Role;
@@ -28,10 +29,10 @@ public class ReaderService {
     }
 
     public ReaderDto modifyReader(ReaderDto readerDto) {
-        if (userService.getRole().equals(Role.ROLE_ADMIN) && userService.getCurrentReader().getId() != readerDto.getId()) {
+        if (!userService.getRole().equals(Role.ROLE_ADMIN) && userService.getCurrentReader().getId() != readerDto.getId()) {
             throw new NotAcceptableException("Current user can not modify reader with id: " + readerDto.getId());
         }
-        Reader reader = readerRepository.findById(readerDto.getId()).orElseThrow(() -> new NotFoundException("Reader not found: " + readerDto.getId()));
+        Reader reader = readerRepository.findById(readerDto.getId()).orElseThrow(() -> new ReaderNotFoundException(readerDto.getId()));
         reader.setAge(readerDto.getAge());
         reader.setName(readerDto.getName());
         return new ReaderDto(readerRepository.save(reader));
@@ -42,7 +43,7 @@ public class ReaderService {
     }
 
     public ReaderDto getById(long id) {
-        Reader reader = readerRepository.findById(id).orElseThrow(() -> new NotFoundException("Reader not found"));
+        Reader reader = readerRepository.findById(id).orElseThrow(() -> new ReaderNotFoundException(id));
         return new ReaderDto(reader);
     }
 
@@ -53,10 +54,12 @@ public class ReaderService {
     }
 
     public void buyTheBook(long id, long bookId) {
-        Book book = bookRepository.findById(bookId).orElseThrow(() -> new NotFoundException("Book not found: " + id));
-        Reader reader = readerRepository.findById(id).orElseThrow(() -> new NotFoundException("Reader not found"));
-        book.setOwner(reader);
-        bookRepository.save(book);
+        Book book = bookRepository.findById(bookId).orElseThrow(() -> new BookNotFoundException(bookId));
+        Reader reader = readerRepository.findById(id).orElseThrow(() -> new ReaderNotFoundException(id));
+        if ( book.getOwner() == null && userService.getCurrentReader().getId() == reader.getId()) {
+            book.setOwner(reader);
+            bookRepository.save(book);
+        }
     }
 
     public Reader createDefaultReader() {

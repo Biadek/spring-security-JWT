@@ -1,6 +1,5 @@
 package com.example.securityExample.security;
 
-import com.example.securityExample.exception.NotFoundException;
 import com.example.securityExample.model.User;
 import com.example.securityExample.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,7 +18,7 @@ public class MyUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(s).orElseThrow(() -> new NotFoundException(s));
+        User user = userRepository.findByEmail(s).orElseThrow(() -> new UsernameNotFoundException(s));
         return new MyUserDetails(user);
     }
 }
