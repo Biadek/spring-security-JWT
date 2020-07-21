@@ -1,6 +1,6 @@
 # spring-security-JWT
 
-<b>Technology stack:</b>
+## Technology stack
 - Java 11
 - Spring Boot
 - Spring Security
