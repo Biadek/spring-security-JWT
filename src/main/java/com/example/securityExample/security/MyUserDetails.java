@@ -14,12 +14,14 @@ public class MyUserDetails implements UserDetails {
     private String email;
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
+    private boolean isEnabled;
 
-    public MyUserDetails(Long id, String email, String password, Collection<? extends GrantedAuthority> authorities) {
+    public MyUserDetails(Long id, String email, String password, Collection<? extends GrantedAuthority> authorities, boolean isEnabled) {
         this.id = id;
         this.email = email;
         this.password = password;
         this.authorities = authorities;
+        this.isEnabled = isEnabled;
     }
 
     public MyUserDetails(User user) {
@@ -27,6 +29,7 @@ public class MyUserDetails implements UserDetails {
         email = user.getEmail();
         password = user.getPassword();
         authorities = Collections.singleton(new SimpleGrantedAuthority(user.getRole().toString()));
+        isEnabled = user.isEnabled();
     }
 
     public Long getId() {
@@ -70,6 +73,6 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return isEnabled;
     }
 }

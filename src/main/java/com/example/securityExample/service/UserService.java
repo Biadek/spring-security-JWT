@@ -2,13 +2,18 @@ package com.example.securityExample.service;
 
 import com.example.securityExample.dto.LoginDto;
 import com.example.securityExample.dto.LoginResponseDto;
+import com.example.securityExample.exception.ActivationTokenNotFoundException;
 import com.example.securityExample.exception.ConflictException;
+import com.example.securityExample.exception.EmailSenderException;
 import com.example.securityExample.exception.UserNotFoundException;
+import com.example.securityExample.model.ActivationToken;
 import com.example.securityExample.model.Reader;
 import com.example.securityExample.model.Role;
 import com.example.securityExample.model.User;
+import com.example.securityExample.repository.ActivationTokenRepository;
 import com.example.securityExample.repository.UserRepository;
 import com.example.securityExample.security.JwtToken;
+import org.springframework.mail.MailException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,6 +22,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import javax.mail.MessagingException;
+import javax.transaction.Transactional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -26,26 +36,50 @@ public class UserService {
     private ReaderService readerService;
     private JwtToken jwtToken;
     private AuthenticationManager authenticationManager;
+    private MailService mailService;
+    private ActivationTokenRepository tokenRepository;
 
-    public UserService(AuthenticationManager authenticationManager, UserRepository userRepository, ReaderService readerService, PasswordEncoder passwordEncoder, JwtToken jwtToken) {
+    public UserService(AuthenticationManager authenticationManager, UserRepository userRepository,
+                       ReaderService readerService, PasswordEncoder passwordEncoder, JwtToken jwtToken,
+                       MailService mailService, ActivationTokenRepository tokenRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.readerService = readerService;
         this.passwordEncoder = passwordEncoder;
         this.jwtToken = jwtToken;
+        this.mailService = mailService;
+        this.tokenRepository = tokenRepository;
     }
 
+    @Transactional
     public void registerNewUser(LoginDto loginDto) {
         if (userRepository.existsByEmail(loginDto.getEmail())) {
             throw new ConflictException(String.format("User with email: %s already exists", loginDto.getEmail()));
         }
 
-        userRepository.save(new User(
+        User user = userRepository.save(new User(
                 loginDto.getEmail(),
                 passwordEncoder.encode(loginDto.getPassword()),
                 Role.ROLE_USER,
-                readerService.createDefaultReader()
+                readerService.createDefaultReader(),
+                false
         ));
+        sendToken(user);
+    }
+
+    private void sendToken(User user) {
+        String tokenValue = UUID.randomUUID().toString();
+        ActivationToken token = new ActivationToken(tokenValue, user);
+        tokenRepository.save(token);
+
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        String activationLink = baseUrl + "/user/token?value=" + tokenValue;
+
+        try {
+            mailService.sendMail(user.getEmail(), "Activate your account!", activationLink, false);
+        } catch (MessagingException | MailException e) {
+            throw new EmailSenderException(e.getMessage());
+        }
     }
 
     public LoginResponseDto loginUser(LoginDto loginDto) {
@@ -83,5 +117,13 @@ public class UserService {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
         user.setRole(Role.ROLE_USER);
         userRepository.save(user);
+    }
+
+    public void activateAccount(String value) {
+        ActivationToken token = tokenRepository.findByToken(value).orElseThrow(() -> new ActivationTokenNotFoundException(value));
+        User user = token.getUser();
+        user.setEnabled(true);
+        userRepository.save(user);
+        tokenRepository.delete(token);
     }
 }

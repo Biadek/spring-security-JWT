@@ -1,8 +1,17 @@
 package com.example.securityExample.dto;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 public class LoginDto {
 
+    @Email
+    @NotBlank
     private String email;
+
+    @NotBlank
+    @Size(min = 6, max = 20)
     private String password;
 
     public LoginDto(String email, String password) {

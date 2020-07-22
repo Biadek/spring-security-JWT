@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ExceptionAdvice {
 
-    @ExceptionHandler(value = {UsernameNotFoundException.class, BookNotFoundException.class, UserNotFoundException.class, ReaderNotFoundException.class})
+    @ExceptionHandler(value = {UsernameNotFoundException.class, BookNotFoundException.class,
+            UserNotFoundException.class, ReaderNotFoundException.class, ActivationTokenNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ExceptionResponse notFound(Exception ex) {
         return new ExceptionResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
@@ -26,8 +27,14 @@ public class ExceptionAdvice {
 
     @ExceptionHandler(NotAcceptableException.class)
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
-    public ExceptionResponse notAcceptable(ConflictException ex) {
+    public ExceptionResponse notAcceptable(NotAcceptableException ex) {
         return new ExceptionResponse(ex.getMessage(), HttpStatus.NOT_ACCEPTABLE.value());
+    }
+
+    @ExceptionHandler(EmailSenderException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionResponse badRequest(EmailSenderException ex) {
+        return new ExceptionResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
     }
 
 }

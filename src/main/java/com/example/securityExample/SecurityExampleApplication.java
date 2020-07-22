@@ -12,24 +12,24 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @SpringBootApplication
 public class SecurityExampleApplication {
 
-	private final UserRepository userRepository;
-	private final ReaderService readerService;
+    private final UserRepository userRepository;
+    private final ReaderService readerService;
 
-	public SecurityExampleApplication(UserRepository userRepository, ReaderService readerService) {
-		this.userRepository = userRepository;
-		this.readerService = readerService;
-	}
+    public SecurityExampleApplication(UserRepository userRepository, ReaderService readerService) {
+        this.userRepository = userRepository;
+        this.readerService = readerService;
+    }
 
-	//Mock example data in database
-	@Bean
-	public void addExampleData() {
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-		userRepository.save(new User("user@gmail.com", encoder.encode("password"), Role.ROLE_USER, readerService.createDefaultReader()));
-		userRepository.save(new User("admin@gmail.com", encoder.encode("pass"), Role.ROLE_ADMIN, readerService.createDefaultReader()));
-	}
+    //example data in database
+    @Bean
+    public void addExampleData() {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        userRepository.save(new User("user@gmail.com", encoder.encode("password"), Role.ROLE_USER, readerService.createDefaultReader(), true));
+        userRepository.save(new User("admin@gmail.com", encoder.encode("password"), Role.ROLE_ADMIN, readerService.createDefaultReader(), true));
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.run(SecurityExampleApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(SecurityExampleApplication.class, args);
+    }
 
 }

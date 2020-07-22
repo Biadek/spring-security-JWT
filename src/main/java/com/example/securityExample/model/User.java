@@ -16,15 +16,17 @@ public class User {
     private Role role;
     @OneToOne
     private Reader reader;
+    private boolean isEnabled;
 
     public User() {
     }
 
-    public User(String email, String password, Role role, Reader reader) {
+    public User(String email, String password, Role role, Reader reader, boolean isEnabled) {
         this.email = email;
         this.password = password;
         this.role = role;
         this.reader = reader;
+        this.isEnabled = isEnabled;
     }
 
     public long getId() {
@@ -63,8 +65,15 @@ public class User {
         this.reader = reader;
     }
 
-
     public String getPassword() {
         return password;
+    }
+
+    public boolean isEnabled() {
+        return isEnabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
     }
 }
