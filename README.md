@@ -49,7 +49,7 @@ Body:
         "password": "password"
 }
 ```
-###Added sample users
+##Added sample users <br>
 email: user@gmail.com <br>
 password: password <br>
 role: ROLE_USER
@@ -58,7 +58,7 @@ email: admin@gmail.com <br>
 password: password <br>
 role: ROLE_ADMIN
 
-###TODO
+##TODO
 
 In ```application.properties``` set Gmail username and password:
 
